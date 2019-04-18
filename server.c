@@ -1,17 +1,33 @@
 //Server.c
 //Ver 1.0
 
-#include <stdio.h>
-#include <stdlib.h>
+
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/un.h>
-#include <arpa/inet.h>
-#include <netdb.h>  //DNS
+#include <sys/socket.h> //Базовые функции сокетов, стркутуры данных
+#include <netdb.h> //Функции для преобразования протокольных имен и имен хостов в числовые адреса
+#include <arpa/inet.h> //Функции для работы с числовыми IP-адресами
+#include <netinet/in.h> //Семейства адресов/протоколов PF_INET (для IPv4) и (PF_INET6 для IPv6). Включают в себя IP-адреса, а также номера портов TCP и UDP
 
-int main(void)
+int sock(const char *transport)
 {
-
-
-    return (0);
+    
+    struct protoent *ppe; // eуказатель на запись с информацией о протоколе
+    int s, type; //дескриптор и тип сокета
+    
+    ppe = getprotobyname(transport); //определение типа сокета
+    
+    if(strcmp(transport, "udp") == 0) //определение типа сокета
+    {
+        type = SOCK_DGRAM; //если udp то SOCK_DGRAM
+    }
+    else
+    {
+        type = SOCK_STREAM; //если tcp то SOCK_STREAM
+    }
+    
+    s = socket(PF_INET, type, ppe->p_proto);
+    
+    return (s); // возвращаем дескриптор сокета
 }
+
+
