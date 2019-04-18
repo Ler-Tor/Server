@@ -30,4 +30,14 @@ int sock(const char *transport)
     return (s); // возвращаем дескриптор сокета
 }
 
+int listner(int sock, const char *host, const char *port) 
+{
+    struct hostent *phe;
+    struct sock_addr_in *sin;
+
+    memset(&sin, 0, sizeof(sin));
+
+     
+
+}
 
