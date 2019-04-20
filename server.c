@@ -36,7 +36,7 @@ int listner(int sock, const char *host, const char *port)
     struct sock_addr_in *sin;
 
     memset(&sin, 0, sizeof(sin));
-
+    
      
 
 }
