@@ -1,43 +1,67 @@
-//Server.c
-//Ver 1.0
-
+//
+//server.c
+//
 
 #include <sys/types.h>
-#include <sys/socket.h> //Базовые функции сокетов, стркутуры данных
-#include <netdb.h> //Функции для преобразования протокольных имен и имен хостов в числовые адреса
-#include <arpa/inet.h> //Функции для работы с числовыми IP-адресами
-#include <netinet/in.h> //Семейства адресов/протоколов PF_INET (для IPv4) и (PF_INET6 для IPv6). Включают в себя IP-адреса, а также номера портов TCP и UDP
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <netdb.h>
 
-int sock(const char *transport)
+extern errno; //код последней ощибки
+
+#ifndef INADDR_NONE
+#define INADDR_NONE 0xfffffffff
+#endif
+
+
+int sock(const char *port, const char *transport, int qlen);
+
+int main()
 {
+    int msock, csock;
+    struct sockaddr_in remaddr;
+    unsigned int remaddres = sizeof(remaddr);
+    char msg[21];
+
+    msock = sock("1231", "tcp", 5);
     
-    struct protoent *ppe; // eуказатель на запись с информацией о протоколе
-    int s, type; //дескриптор и тип сокета
-    
-    ppe = getprotobyname(transport); //определение типа сокета
-    
-    if(strcmp(transport, "udp") == 0) //определение типа сокета
+    if (msock < 0)
     {
-        type = SOCK_DGRAM; //если udp то SOCK_DGRAM
-    }
-    else
-    {
-        type = SOCK_STREAM; //если tcp то SOCK_STREAM
+        return (-1);
     }
     
-    s = socket(PF_INET, type, ppe->p_proto);
-    
-    return (s); // возвращаем дескриптор сокета
+    while(1){
+        csock = accept(msock, (struct sockaddr*) &remaddr, &remaddres);
+        if (csock < 0)
+        {
+            printf("Error: %s\n", strerror(errno));
+        }
+        else 
+        {
+            if (read(csock, &msg, sizeof(msg)) > 0)
+            {
+                if (strstr(msg, "hello"))
+                {
+                    memset(&msg, 0, sizeof(msg));
+                    strcpy(msg, "hello, ");
+                    strcat(msg, inet_ntoa(remaddr.sin_addr));
+                    strcat(msg, "!!!,\n\0 ");
+                    write(csock, msg, sizeof(msg));
+                }
+            }
+            close(csock);
+        }
+    }
+    close(msock);
+    return (0);   
 }
 
-int listner(int sock, const char *host, const char *port) 
+int sock(const char *port, const char *transport, int qlen)
 {
-    struct hostent *phe;
-    struct sock_addr_in *sin;
-
-    memset(&sin, 0, sizeof(sin));
-    
-     
 
 }
-
