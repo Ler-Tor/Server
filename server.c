@@ -30,7 +30,7 @@ int main()
 
     msock = sock("1231", "tcp", 5);
     
-    if (msock < 0)
+    if(msock < 0)
     {
         return (-1);
     }
@@ -61,7 +61,49 @@ int main()
     return (0);   
 }
 
-int sock(const char *port, const char *transport, int qlen)
+int sock(const char *port, const char *transport, int qlen) //создание и прослушивание сокета объединено 
 {
+    struct protoent *ppe;
+    struct sockaddr_in sin;
+    int s, type;
 
+    memset(&sin, 0, sizeof(sin));
+
+    sin.sin_family = AF_INET;
+    sin.sin_addr.s_addr = INADDR_ANY;
+    sin.sin_port = htons((unsigned short)atoi(port));
+
+    if ((ppe = getprotobyname(transport)) == 0)
+    {
+        printf("Error: %s\n", strerror(errno));
+        return (-1);
+    }
+    
+    if (strcpy(transport, "udp") == 0)
+    {
+        type = SOCK_DGRAM;
+    }
+    else
+    {
+        type = SOCK_STREAM;
+    }
+
+    s = socket(PF_INET, type, ppe->p_proto);
+    if (s < 0)
+    {
+        printf("Socket creating error: %s\n", strerror(errno));
+        return (-1);
+    }
+    if (bind(s, (struct sockaddr *)&sin, sizeof(sin)) < 0)
+    {
+        printf("Connecting socket error: %s\n", strerror(errno));
+        return(-1);
+    }
+    if (type == SOCK_STREAM && listen(s, qlen) < 0)
+    {
+        printf("Listner error: %s\n", strerror(errno));
+        return(-1);
+    }
+    
+    return (s);
 }
